@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Handles user authentication and authorization
+# Includes login, signup, JWT token generation and validation
+# Passwords are hashed with bcrypt
+# Use Prisma to interact with the User model
+
+- You can @ files here
+- You can use markdown but dont have to

@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# General rules for this Express backend project
+# Use ONLY JavaScript (no TypeScript)
+# Stack: Express.js, Prisma, MySQL
+# Use Zod for validation
+# Purpose: Backend API for an English test app
+# Key Features: Modular architecture, user authentication (optional), quiz creation and access
+# Notes:
+# - Use reusable middlewares and services
+# - Apply clean code and separation of concerns
+
+
+
+- You can @ files here
+- You can use markdown but dont have to
+@general.mdc

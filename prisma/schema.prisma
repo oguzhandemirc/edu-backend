@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int          @id @default(autoincrement())
+  email            String       @unique
+  password         String
+  name             String?
+  role             String       @default("user")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  sections         Section[]    @relation("SectionCreatedBy")
+  tests            Test[]       @relation("TestCreatedBy")
+  questions        Question[]   @relation("QuestionCreatedBy")
+  updatedSections  Section[]    @relation("SectionUpdatedBy")
+  updatedTests     Test[]       @relation("TestUpdatedBy")
+  updatedQuestions Question[]   @relation("QuestionUpdatedBy")
+  testResults      TestResult[]
+}
+
+// Bölümler: Okuduğunu anlama, çeviri, cümle tamamlama, vb.
+model Section {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int
+  createdBy   User     @relation("SectionCreatedBy", fields: [createdById], references: [id])
+  updatedById Int?
+  updatedBy   User?    @relation("SectionUpdatedBy", fields: [updatedById], references: [id])
+  tests       Test[]
+}
+
+// Testler: Her bölümün kendi içinde (Test1, Test2, Test3)
+model Test {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String       @db.Text
+  difficulty  Difficulty   @default(BEGINNER)
+  duration    Int          @default(30) // Dakika cinsinden süre (varsayılan 30 dakika)
+  sectionId   Int
+  section     Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdById Int
+  createdBy   User         @relation("TestCreatedBy", fields: [createdById], references: [id])
+  updatedById Int?
+  updatedBy   User?        @relation("TestUpdatedBy", fields: [updatedById], references: [id])
+  questions   Question[]
+  testResults TestResult[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// Sorular (Sadece çoktan seçmeli)
+model Question {
+  id          Int          @id @default(autoincrement())
+  content     String       @db.Text
+  options     Option[]
+  explanation String?      @db.Text
+  testId      Int
+  test        Test         @relation(fields: [testId], references: [id], onDelete: Cascade)
+  createdById Int
+  createdBy   User         @relation("QuestionCreatedBy", fields: [createdById], references: [id])
+  updatedById Int?
+  updatedBy   User?        @relation("QuestionUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userAnswers UserAnswer[]
+}
+
+// Çoktan seçmeli sorular için şıklar
+model Option {
+  id          Int          @id @default(autoincrement())
+  content     String       @db.Text
+  isCorrect   Boolean      @default(false)
+  questionId  Int
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswer[]
+}
+
+// Test Sonuçları
+model TestResult {
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testId        Int
+  test          Test         @relation(fields: [testId], references: [id], onDelete: Cascade)
+  score         Float // Puan (0-100)
+  correctCount  Int // Doğru cevap sayısı
+  wrongCount    Int // Yanlış cevap sayısı
+  emptyCount    Int // Boş bırakılan soru sayısı
+  totalDuration Int // Toplam süre (saniye)
+  userAnswers   UserAnswer[]
+  createdAt     DateTime     @default(now())
+
+  @@index([userId])
+  @@index([testId])
+}
+
+// Kullanıcı Cevapları
+model UserAnswer {
+  id               Int        @id @default(autoincrement())
+  testResultId     Int
+  testResult       TestResult @relation(fields: [testResultId], references: [id], onDelete: Cascade)
+  questionId       Int
+  question         Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptionId Int?
+  selectedOption   Option?    @relation(fields: [selectedOptionId], references: [id])
+  isCorrect        Boolean    @default(false)
+
+  @@index([testResultId])
+  @@index([questionId])
+}
+
+// Zorluk seviyesi enum
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
