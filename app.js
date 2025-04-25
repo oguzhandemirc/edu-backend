@@ -7,8 +7,25 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Yalnızca ana dizin isteklerini yönlendirecek middleware
+app.use((req, res, next) => {
+    if (req.originalUrl === '/') {
+        // Sadece ana dizine gelen istekleri yönlendir
+        return res.redirect(301, `https://test.oguzhandemirci.com.tr`);
+    }
+    next();  // API istekleri için yönlendirmeyi atla
+});
+
+// CORS ayarları
+const corsOptions = {
+    origin: ['https://oguzhandemirci.com.tr', 'http://localhost:3000', 'https://test.oguzhandemirci.com.tr', 'https://panel.oguzhandemirci.com.tr'],  // Bu domain'lere izin ver
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // İzin verilen HTTP metodları
+    allowedHeaders: ['Content-Type', 'Authorization'],  // İzin verilen header'lar
+    credentials: true,  // Eğer kimlik doğrulaması yapılıyorsa
+};
+
+app.use(cors(corsOptions));  // CORS middleware'ini bu ayarlarla kullan
+
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -23,7 +40,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `http://localhost:${process.env.PORT || 3000}`,
+                url: 'https://oguzhandemirci.com.tr',
             },
         ],
         components: {
@@ -36,7 +53,7 @@ const swaggerOptions = {
             },
         },
     },
-    apis: ['./routes/*.js'], // API rotalarının bulunduğu dosyalar
+    apis: ['./routes/*.js'],  // API rotalarının bulunduğu dosyalar
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -64,9 +81,9 @@ app.use('/api/test-results', require('./routes/testResult'));
 
 // Sunucu başlatma
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Sunucu ${PORT} portunda çalışıyor`);
-    console.log(`Swagger belgeleri şu adreste: http://localhost:${PORT}/api-docs`);
+    console.log(`Swagger belgeleri şu adreste: https://oguzhandemirci.com.tr/api-docs`);
 });
 
-module.exports = app; 
+module.exports = app;
