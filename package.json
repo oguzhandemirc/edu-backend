@@ -5,14 +5,18 @@
   "scripts": {
     "start": "NODE_ENV=production node app.js",
     "dev": "NODE_ENV=development nodemon app.js",
+    "start:pm2": "pm2 start ecosystem.config.js --env production",
+    "start:pm2:dev": "pm2 start ecosystem.config.js --env development",
+    "restart:pm2": "pm2 restart edu-api",
+    "stop:pm2": "pm2 stop edu-api",
     "prisma:dev": "prisma migrate dev",
-    "prisma:prod": "prisma migrate deploy",
+    "prisma:prod": "prisma migrate deploy", 
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "İngilizce Test Uygulaması API - MySQL veritabanı ile",
+  "description": "Test Uygulaması API - MySQL veritabanı ile",
   "dependencies": {
     "@prisma/client": "^5.11.0",
     "bcrypt": "^5.1.1",

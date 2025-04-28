@@ -27,37 +27,47 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan(config.logging));
 
-// Swagger yapılandırması
-const swaggerOptions = {
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'Test Uygulaması API',
-            version: '1.0.0',
-            description: 'Test uygulaması için Express API',
-        },
-        servers: [
-            {
-                url: config.nodeEnv === 'production' ? 'https://oguzhandemirci.com.tr' : 'http://localhost:3000',
-                description: config.nodeEnv === 'production' ? 'Production ortamı' : 'Development ortamı',
+// Swagger yapılandırması - sadece development ortamında erişilebilir
+if (config.nodeEnv !== 'production') {
+    const swaggerOptions = {
+        definition: {
+            openapi: '3.0.0',
+            info: {
+                title: 'Test Uygulaması API',
+                version: '1.0.0',
+                description: 'Test uygulaması için Express API',
             },
-        ],
-        components: {
-            securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
+            servers: [
+                {
+                    url: 'http://localhost:3000',
+                    description: 'Development ortamı',
+                },
+            ],
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: 'http',
+                        scheme: 'bearer',
+                        bearerFormat: 'JWT',
+                    },
                 },
             },
         },
-    },
-    apis: ['./routes/*.js'],  // API rotalarının bulunduğu dosyalar
-};
+        apis: ['./routes/*.js'],  // API rotalarının bulunduğu dosyalar
+    };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+    const swaggerDocs = swaggerJsDoc(swaggerOptions);
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+    console.log('Swagger API dokümantasyonu etkinleştirildi (sadece development ortamında erişilebilir)');
+} else {
+    // Production ortamında api-docs'a erişim engellendi
+    app.use('/api-docs', (req, res) => {
+        res.status(403).json({
+            error: 'API dokümantasyonuna sadece development ortamında erişilebilir'
+        });
+    });
+}
 
 // Auth rotaları
 app.use('/api/auth', require('./routes/auth'));
@@ -77,7 +87,9 @@ app.use('/api/test-results', require('./routes/testResult'));
 // Sunucu başlatma
 app.listen(config.port, '0.0.0.0', () => {
     console.log(`Sunucu ${config.apiUrl} adresinde çalışıyor`);
-    console.log(`Swagger belgeleri şu adreste: ${config.apiUrl}/api-docs`);
+    if (config.nodeEnv !== 'production') {
+        console.log(`Swagger belgeleri şu adreste: ${config.apiUrl}/api-docs`);
+    }
 });
 
 module.exports = app;

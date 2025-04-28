@@ -13,7 +13,7 @@ module.exports = {
     apiUrl: process.env.API_URL,
     corsOrigins: process.env.NODE_ENV === 'production'
         ? ['https://oguzhandemirci.com.tr', 'https://test.oguzhandemirci.com.tr', 'https://panel.oguzhandemirci.com.tr']
-        : ['http://localhost:3000'],
+        : ['http://localhost:3000', 'http://localhost:5173'],
     logging: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
     redirectUrl: process.env.NODE_ENV === 'production'
         ? 'https://test.oguzhandemirci.com.tr'
