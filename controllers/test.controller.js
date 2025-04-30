@@ -61,7 +61,13 @@ exports.getAllTests = async (req, res) => {
             orderBy: { createdAt: 'desc' },
         });
 
-        return res.status(200).json(tests);
+        // Soru sayısını doğrudan test objesine ekle
+        const testsWithQuestionCount = tests.map(test => ({
+            ...test,
+            questionCount: test._count.questions,
+        }));
+
+        return res.status(200).json(testsWithQuestionCount);
     } catch (error) {
         console.error('Testleri getirme hatası:', error);
         return res.status(500).json({ message: 'Sunucu hatası' });
@@ -113,7 +119,13 @@ exports.getTestsBySection = async (req, res) => {
             orderBy: { createdAt: 'desc' },
         });
 
-        return res.status(200).json(tests);
+        // Soru sayısını doğrudan test objesine ekle
+        const testsWithQuestionCount = tests.map(test => ({
+            ...test,
+            questionCount: test._count.questions,
+        }));
+
+        return res.status(200).json(testsWithQuestionCount);
     } catch (error) {
         console.error('Testleri getirme hatası:', error);
         return res.status(500).json({ message: 'Sunucu hatası' });
@@ -174,7 +186,13 @@ exports.getTestById = async (req, res) => {
             return res.status(404).json({ message: 'Test bulunamadı' });
         }
 
-        return res.status(200).json(test);
+        // Soru sayısını doğrudan test objesine ekle
+        const testWithQuestionCount = {
+            ...test,
+            questionCount: test.questions.length,
+        };
+
+        return res.status(200).json(testWithQuestionCount);
     } catch (error) {
         console.error('Test getirme hatası:', error);
         return res.status(500).json({ message: 'Sunucu hatası' });

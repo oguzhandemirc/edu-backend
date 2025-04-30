@@ -233,4 +233,31 @@ router.get('/test/:testId', authenticate, testResultController.getUserTestResult
  */
 router.get('/:resultId', authenticate, testResultController.getTestResultDetails);
 
+/**
+ * @swagger
+ * /api/test-results/latest/{testId}:
+ *   get:
+ *     summary: Belirli bir teste ait kullanıcının en son test sonucunu getir
+ *     tags: [Test Results]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: testId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Test ID
+ *     responses:
+ *       200:
+ *         description: En son test sonucu başarıyla getirildi
+ *       400:
+ *         description: Geçersiz test ID
+ *       401:
+ *         description: Oturum açılmamış
+ *       404:
+ *         description: Test bulunamadı veya bu teste ait sonuç bulunamadı
+ */
+router.get('/latest/:testId', authenticate, testResultController.getLatestUserTestResult);
+
 module.exports = router; 

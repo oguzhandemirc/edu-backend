@@ -435,4 +435,91 @@ exports.getUserTestResultsByTestId = async (req, res) => {
         console.error('Test sonuçlarını getirme hatası:', error);
         return res.status(500).json({ message: 'Sunucu hatası' });
     }
+};
+
+// Belirli bir teste ait kullanıcının en son test sonucunu görüntüleme
+exports.getLatestUserTestResult = async (req, res) => {
+    try {
+        const testId = parseInt(req.params.testId);
+
+        if (isNaN(testId)) {
+            return res.status(400).json({ message: 'Geçersiz test ID' });
+        }
+
+        // Test varlığını kontrol et
+        const test = await prisma.test.findUnique({
+            where: { id: testId },
+            include: { section: true }
+        });
+
+        if (!test) {
+            return res.status(404).json({ message: 'Test bulunamadı' });
+        }
+
+        // Kullanıcının bu teste ait en son sonucunu getir
+        const testResult = await prisma.testResult.findFirst({
+            where: {
+                userId: req.user.id,
+                testId: testId
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            include: {
+                userAnswers: {
+                    include: {
+                        question: {
+                            include: {
+                                options: true
+                            }
+                        },
+                        selectedOption: true
+                    }
+                }
+            }
+        });
+
+        if (!testResult) {
+            return res.status(404).json({ message: 'Bu teste ait sonuç bulunamadı' });
+        }
+
+        // Sonuç dönüşünü hazırla - açıklamalar ve doğru cevaplar dahil
+        const result = {
+            testResult: {
+                id: testResult.id,
+                testId: testResult.testId,
+                testTitle: test.title,
+                sectionTitle: test.section.title,
+                score: testResult.score,
+                correctCount: testResult.correctCount,
+                wrongCount: testResult.wrongCount,
+                emptyCount: testResult.emptyCount,
+                totalDuration: testResult.totalDuration,
+                completedAt: testResult.createdAt,
+            },
+            answers: testResult.userAnswers.map(answer => {
+                const question = answer.question;
+                const correctOption = question.options.find(o => o.isCorrect);
+
+                return {
+                    questionId: question.id,
+                    content: question.content,
+                    explanation: question.explanation,
+                    selectedOptionId: answer.selectedOptionId,
+                    isCorrect: answer.isCorrect,
+                    correctOptionId: correctOption ? correctOption.id : null,
+                    options: question.options.map(option => ({
+                        id: option.id,
+                        content: option.content,
+                        isCorrect: option.isCorrect
+                    }))
+                };
+            })
+        };
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('En son test sonucunu getirme hatası:', error);
+        return res.status(500).json({ message: 'Sunucu hatası' });
+    }
 }; 

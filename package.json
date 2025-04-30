@@ -10,7 +10,7 @@
     "restart:pm2": "pm2 restart edu-api",
     "stop:pm2": "pm2 stop edu-api",
     "prisma:dev": "prisma migrate dev",
-    "prisma:prod": "prisma migrate deploy", 
+    "prisma:prod": "prisma migrate deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -24,13 +24,20 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.1",
+    "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "passport": "^0.7.0",
+    "passport-apple": "^2.0.2",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "dotenv-cli": "^8.0.0",
     "nodemon": "^3.1.9",
     "prisma": "^5.11.0"
   }

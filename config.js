@@ -10,6 +10,7 @@ module.exports = {
     port: process.env.PORT || 3000,
     databaseUrl: process.env.DATABASE_URL,
     jwtSecret: process.env.JWT_SECRET,
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d', // Default: 1 gün
     apiUrl: process.env.API_URL,
     corsOrigins: process.env.NODE_ENV === 'production'
         ? ['https://oguzhandemirci.com.tr', 'https://test.oguzhandemirci.com.tr', 'https://panel.oguzhandemirci.com.tr']

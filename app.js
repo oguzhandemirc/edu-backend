@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+const passport = require('./config/passport');
 const config = require('./config');
+const { errorMiddleware } = require('./utils/errorHandler');
+const { setupSwagger } = require('./config/swagger');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimit.middleware');
 
 const app = express();
 
@@ -27,50 +29,22 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan(config.logging));
 
-// Swagger yapılandırması - sadece development ortamında erişilebilir
-if (config.nodeEnv !== 'production') {
-    const swaggerOptions = {
-        definition: {
-            openapi: '3.0.0',
-            info: {
-                title: 'Test Uygulaması API',
-                version: '1.0.0',
-                description: 'Test uygulaması için Express API',
-            },
-            servers: [
-                {
-                    url: 'http://localhost:3000',
-                    description: 'Development ortamı',
-                },
-            ],
-            components: {
-                securitySchemes: {
-                    bearerAuth: {
-                        type: 'http',
-                        scheme: 'bearer',
-                        bearerFormat: 'JWT',
-                    },
-                },
-            },
-        },
-        apis: ['./routes/*.js'],  // API rotalarının bulunduğu dosyalar
-    };
+// Swagger kurulumu
+setupSwagger(app);
 
-    const swaggerDocs = swaggerJsDoc(swaggerOptions);
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+// Passport middleware'i ekle
+app.use(passport.initialize());
 
-    console.log('Swagger API dokümantasyonu etkinleştirildi (sadece development ortamında erişilebilir)');
-} else {
-    // Production ortamında api-docs'a erişim engellendi
-    app.use('/api-docs', (req, res) => {
-        res.status(403).json({
-            error: 'API dokümantasyonuna sadece development ortamında erişilebilir'
-        });
-    });
-}
+// Tüm API rotalarına genel rate limit uygula
+app.use('/api', apiLimiter);
 
-// Auth rotaları
+// Auth rotaları (auth limiter ile koruma)
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 app.use('/api/auth', require('./routes/auth'));
+
+// Google OAuth rotaları
+app.use('/api/auth', require('./routes/google-auth'));
 
 // Bölüm rotaları
 app.use('/api/sections', require('./routes/section'));
@@ -83,6 +57,9 @@ app.use('/api/questions', require('./routes/question'));
 
 // Test sonuçları rotaları
 app.use('/api/test-results', require('./routes/testResult'));
+
+// Global error handling middleware
+app.use(errorMiddleware);
 
 // Sunucu başlatma
 app.listen(config.port, '0.0.0.0', () => {

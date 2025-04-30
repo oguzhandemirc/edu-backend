@@ -21,6 +21,9 @@ exports.getAllSections = async (req, res) => {
                         difficulty: true,
                     },
                 },
+                _count: {
+                    select: { tests: true },
+                },
                 createdBy: {
                     select: {
                         id: true,
@@ -38,7 +41,13 @@ exports.getAllSections = async (req, res) => {
             },
         });
 
-        return res.status(200).json(sections);
+        // Her bölüme testCount alanı ekleme
+        const sectionsWithTestCount = sections.map(section => ({
+            ...section,
+            testCount: section._count.tests,
+        }));
+
+        return res.status(200).json(sectionsWithTestCount);
     } catch (error) {
         console.error('Bölümleri getirme hatası:', error);
         return res.status(500).json({ message: 'Sunucu hatası' });
@@ -80,6 +89,9 @@ exports.getSectionById = async (req, res) => {
                         },
                     },
                 },
+                _count: {
+                    select: { tests: true },
+                },
                 createdBy: {
                     select: {
                         id: true,
@@ -101,7 +113,20 @@ exports.getSectionById = async (req, res) => {
             return res.status(404).json({ message: 'Bölüm bulunamadı' });
         }
 
-        return res.status(200).json(section);
+        // Testlere questionCount ekleme
+        const testsWithQuestionCount = section.tests.map(test => ({
+            ...test,
+            questionCount: test._count.questions,
+        }));
+
+        // Bölüme testCount ekleme
+        const sectionWithCounts = {
+            ...section,
+            testCount: section._count.tests,
+            tests: testsWithQuestionCount,
+        };
+
+        return res.status(200).json(sectionWithCounts);
     } catch (error) {
         console.error('Bölüm getirme hatası:', error);
         return res.status(500).json({ message: 'Sunucu hatası' });

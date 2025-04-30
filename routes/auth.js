@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { authenticate } = require('../middleware/auth.middleware');
+const { authLimiter } = require('../middleware/rateLimit.middleware');
 
 /**
  * @swagger
@@ -18,7 +19,7 @@ const { authenticate } = require('../middleware/auth.middleware');
  *             required:
  *               - email
  *               - password
- *               - name
+ *               - termsAccepted
  *             properties:
  *               email:
  *                 type: string
@@ -28,6 +29,15 @@ const { authenticate } = require('../middleware/auth.middleware');
  *                 minLength: 6
  *               name:
  *                 type: string
+ *               termsAccepted:
+ *                 type: boolean
+ *                 description: Kullanım şartlarını ve gizlilik politikasını kabul ettiğini belirtir
+ *                 example: true
+ *               marketingEmails:
+ *                 type: boolean
+ *                 description: E-posta kampanyalarından haberdar olmak isteyip istemediğini belirtir
+ *                 default: false
+ *                 example: false
  *     responses:
  *       201:
  *         description: Kullanıcı başarıyla kaydedildi
@@ -158,5 +168,95 @@ router.get('/validate-token', authenticate, authController.validateToken);
  *                   example: Bu işlem için admin yetkisi gerekiyor
  */
 router.get('/verify-role', authenticate, authController.verifyRole);
+
+/**
+ * @swagger
+ * /api/auth/google-token:
+ *   post:
+ *     summary: Google'dan alınan token ile giriş yapar
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - termsAccepted
+ *             properties:
+ *               token:
+ *                 type: string
+ *               clientId:
+ *                 type: string
+ *               termsAccepted:
+ *                 type: boolean
+ *                 description: Kullanım şartlarını ve gizlilik politikasını kabul ettiğini belirtir
+ *                 example: true
+ *               marketingEmails:
+ *                 type: boolean
+ *                 description: E-posta kampanyalarından haberdar olmak isteyip istemediğini belirtir
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Başarılı giriş
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *       400:
+ *         description: Kullanım şartları kabul edilmemiş
+ *       401:
+ *         description: Geçersiz token
+ */
+router.post('/google-token', authController.verifyGoogleToken);
+
+/**
+ * @swagger
+ * /api/auth/preferences:
+ *   put:
+ *     summary: Kullanıcı tercihlerini günceller
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               marketingEmails:
+ *                 type: boolean
+ *                 description: E-posta kampanyalarından haberdar olmak isteyip istemediğini belirtir
+ *     responses:
+ *       200:
+ *         description: Kullanıcı tercihleri başarıyla güncellendi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *       400:
+ *         description: Geçersiz giriş verileri
+ *       401:
+ *         description: Oturum açılmamış
+ */
+router.put('/preferences', authenticate, authController.updatePreferences);
 
 module.exports = router; 
