@@ -9,8 +9,8 @@ const config = require('../config');
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientID: '1032458908637-slvinsftteu5lot5f4mvlbi8v03cj9ur.apps.googleusercontent.com',
+            clientSecret: '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',
             callbackURL: `${config.apiUrl}/api/auth/google/callback`,
             scope: ['profile', 'email']
         },

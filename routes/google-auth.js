@@ -19,7 +19,7 @@ router.get('/google',
         // State parametresi, CSRF koruması için kullanılabilir
         // Ayrıca, yönlendirme yapmak istediğiniz frontend URL'ini taşıyabilir
         state: process.env.NODE_ENV === 'production'
-            ? 'https://test.oguzhandemirci.com.tr'
+            ? 'https://e-yds.oguzhandemirci.com.tr'
             : 'http://localhost:5173'
     })
 );
@@ -64,7 +64,7 @@ router.get('/google/callback',
             // Frontend URL'ini al (state'ten veya varsayılan değerden)
             const frontendUrl = req.query.state ||
                 (process.env.NODE_ENV === 'production'
-                    ? 'https://test.oguzhandemirci.com.tr'
+                    ? 'https://e-yds.oguzhandemirci.com.tr'
                     : 'http://localhost:5173');
 
             // Token'ı URL parametresi olarak frontend'e gönder

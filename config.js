@@ -13,10 +13,10 @@ module.exports = {
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d', // Default: 1 gün
     apiUrl: process.env.API_URL,
     corsOrigins: process.env.NODE_ENV === 'production'
-        ? ['https://oguzhandemirci.com.tr', 'https://test.oguzhandemirci.com.tr', 'https://panel.oguzhandemirci.com.tr']
+        ? ['https://e-yds.quizta.com.tr/', 'https://panel-e-yds.quizta.com.tr/']
         : ['http://localhost:3000', 'http://localhost:5173'],
     logging: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
     redirectUrl: process.env.NODE_ENV === 'production'
-        ? 'https://test.oguzhandemirci.com.tr'
+        ? 'https://e-yds.quizta.com.tr/'
         : 'http://localhost:3000/api-docs'
 };
