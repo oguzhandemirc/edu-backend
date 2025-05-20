@@ -12,34 +12,6 @@ const { authenticate, requireAdmin } = require('../middleware/auth.middleware');
 
 /**
  * @swagger
- * /api/tests/difficulty-levels:
- *   get:
- *     summary: Test zorluk seviyelerini listeler
- *     tags: [Tests]
- *     responses:
- *       200:
- *         description: Zorluk seviyeleri başarıyla getirildi
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   value:
- *                     type: string
- *                     description: Zorluk seviyesi değeri
- *                     enum: [BEGINNER, INTERMEDIATE, ADVANCED, EXPERT]
- *                   label:
- *                     type: string
- *                     description: Zorluk seviyesi etiketi
- *       500:
- *         description: Sunucu hatası
- */
-router.get('/difficulty-levels', testController.getDifficultyLevels);
-
-/**
- * @swagger
  * /api/tests:
  *   get:
  *     summary: Tüm testleri listeler
@@ -100,6 +72,27 @@ router.get('/:id', testController.getTestById);
 
 /**
  * @swagger
+ * /api/tests/{id}/questions:
+ *   get:
+ *     summary: Belirli bir teste ait tüm soruları getirir
+ *     tags: [Tests]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Test ID'si
+ *     responses:
+ *       200:
+ *         description: Sorular başarıyla getirildi
+ *       404:
+ *         description: Test bulunamadı
+ */
+router.get('/:id/questions', testController.getQuestionsByTest);
+
+/**
+ * @swagger
  * /api/tests:
  *   post:
  *     summary: Yeni bir test oluşturur (Sadece admin)
@@ -115,22 +108,25 @@ router.get('/:id', testController.getTestById);
  *             required:
  *               - title
  *               - description
- *               - difficulty
+ *               - difficultyLevelId
  *               - sectionId
  *             properties:
  *               title:
  *                 type: string
+ *                 description: Testin başlığı
  *               description:
  *                 type: string
- *               difficulty:
- *                 type: string
- *                 enum: [BEGINNER, INTERMEDIATE, ADVANCED, EXPERT]
+ *                 description: Testin açıklaması
+ *               difficultyLevelId:
+ *                 type: integer
+ *                 description: Zorluk seviyesi ID'si
  *               duration:
  *                 type: integer
  *                 description: Testin dakika cinsinden süresi
  *                 default: 30
  *               sectionId:
  *                 type: integer
+ *                 description: Bölüm ID'si
  *     responses:
  *       201:
  *         description: Test başarıyla oluşturuldu
@@ -141,9 +137,7 @@ router.get('/:id', testController.getTestById);
  *       403:
  *         description: Yetkisiz erişim
  *       404:
- *         description: Bölüm bulunamadı
- *       500:
- *         description: Sunucu hatası
+ *         description: Bölüm veya zorluk seviyesi bulunamadı
  */
 router.post('/', authenticate, requireAdmin, testController.createTest);
 
@@ -171,22 +165,25 @@ router.post('/', authenticate, requireAdmin, testController.createTest);
  *             required:
  *               - title
  *               - description
- *               - difficulty
+ *               - difficultyLevelId
  *               - sectionId
  *             properties:
  *               title:
  *                 type: string
+ *                 description: Testin başlığı
  *               description:
  *                 type: string
- *               difficulty:
- *                 type: string
- *                 enum: [BEGINNER, INTERMEDIATE, ADVANCED, EXPERT]
+ *                 description: Testin açıklaması
+ *               difficultyLevelId:
+ *                 type: integer
+ *                 description: Zorluk seviyesi ID'si
  *               duration:
  *                 type: integer
  *                 description: Testin dakika cinsinden süresi
  *                 default: 30
  *               sectionId:
  *                 type: integer
+ *                 description: Bölüm ID'si
  *     responses:
  *       200:
  *         description: Test başarıyla güncellendi
@@ -197,9 +194,7 @@ router.post('/', authenticate, requireAdmin, testController.createTest);
  *       403:
  *         description: Yetkisiz erişim
  *       404:
- *         description: Test veya bölüm bulunamadı
- *       500:
- *         description: Sunucu hatası
+ *         description: Test, bölüm veya zorluk seviyesi bulunamadı
  */
 router.put('/:id', authenticate, requireAdmin, testController.updateTest);
 
@@ -207,7 +202,7 @@ router.put('/:id', authenticate, requireAdmin, testController.updateTest);
  * @swagger
  * /api/tests/{id}:
  *   delete:
- *     summary: Testi ve ilişkili tüm soruları siler (Sadece admin)
+ *     summary: Testi siler (Sadece admin)
  *     tags: [Tests]
  *     security:
  *       - bearerAuth: []
@@ -220,15 +215,13 @@ router.put('/:id', authenticate, requireAdmin, testController.updateTest);
  *         description: Test ID'si
  *     responses:
  *       200:
- *         description: Test ve ilişkili sorular başarıyla silindi
+ *         description: Test başarıyla silindi
  *       401:
  *         description: Kimlik doğrulama gerekli
  *       403:
  *         description: Yetkisiz erişim
  *       404:
  *         description: Test bulunamadı
- *       500:
- *         description: Sunucu hatası
  */
 router.delete('/:id', authenticate, requireAdmin, testController.deleteTest);
 

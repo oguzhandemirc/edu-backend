@@ -259,4 +259,223 @@ router.post('/google-token', authController.verifyGoogleToken);
  */
 router.put('/preferences', authenticate, authController.updatePreferences);
 
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Şifre sıfırlama talebi oluşturur ve e-posta gönderir
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Şifre sıfırlama kodu e-posta adresinize gönderildi
+ *       404:
+ *         description: Bu e-posta adresine sahip bir kullanıcı bulunamadı
+ *       400:
+ *         description: Geçersiz giriş verileri
+ */
+router.post('/forgot-password', authLimiter, authController.requestPasswordReset);
+
+/**
+ * @swagger
+ * /api/auth/verify-reset-code:
+ *   post:
+ *     summary: Şifre sıfırlama kodunu doğrular
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - code
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Doğrulama kodu geçerli
+ *       400:
+ *         description: Geçersiz veya süresi dolmuş kod
+ */
+router.post('/verify-reset-code', authController.verifyResetCode);
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Şifre sıfırlama işlemini tamamlar
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - code
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       200:
+ *         description: Şifreniz başarıyla sıfırlandı
+ *       400:
+ *         description: Geçersiz veya süresi dolmuş kod
+ */
+router.post('/reset-password', authController.resetPassword);
+
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Giriş yapmış kullanıcının şifresini değiştirir
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Mevcut şifre
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *                 description: Yeni şifre
+ *     responses:
+ *       200:
+ *         description: Şifreniz başarıyla değiştirildi
+ *       400:
+ *         description: Geçersiz giriş verileri veya mevcut şifre yanlış
+ *       401:
+ *         description: Oturum açılmamış
+ */
+router.post('/change-password', authenticate, authController.changePassword);
+
+/**
+ * @swagger
+ * /api/auth/delete-account:
+ *   post:
+ *     summary: Kullanıcı hesabını siler
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 description: Kullanıcının şifresi (Google hesabı değilse zorunlu)
+ *               reason:
+ *                 type: string
+ *                 description: Hesabın silinme nedeni
+ *     responses:
+ *       200:
+ *         description: Hesabınız başarıyla silindi
+ *       400:
+ *         description: Şifre yanlış
+ *       401:
+ *         description: Oturum açılmamış
+ */
+router.post('/delete-account', authenticate, authController.deleteAccount);
+
+/**
+ * @swagger
+ * /api/auth/request-email-change:
+ *   post:
+ *     summary: E-posta değişikliği için doğrulama kodu gönderir
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newEmail
+ *             properties:
+ *               newEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: Yeni e-posta adresi
+ *     responses:
+ *       200:
+ *         description: E-posta değişikliği için doğrulama kodu gönderildi
+ *       400:
+ *         description: Geçersiz e-posta
+ *       401:
+ *         description: Oturum açılmamış
+ *       409:
+ *         description: E-posta başka bir kullanıcı tarafından kullanılıyor
+ */
+router.post('/request-email-change', authenticate, authController.requestEmailChange);
+
+/**
+ * @swagger
+ * /api/auth/verify-email-change:
+ *   post:
+ *     summary: E-posta değişikliğini doğrulama kodu ile tamamlar
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: Doğrulama kodu
+ *     responses:
+ *       200:
+ *         description: E-posta adresiniz başarıyla değiştirildi
+ *       400:
+ *         description: Geçersiz veya süresi dolmuş doğrulama kodu
+ *       401:
+ *         description: Oturum açılmamış
+ */
+router.post('/verify-email-change', authenticate, authController.verifyEmailChange);
+
 module.exports = router; 

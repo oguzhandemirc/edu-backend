@@ -46,8 +46,14 @@ app.use('/api/auth', require('./routes/auth'));
 // Google OAuth rotaları
 app.use('/api/auth', require('./routes/google-auth'));
 
+// Kategori rotaları
+app.use('/api/categories', require('./routes/category'));
+
 // Bölüm rotaları
 app.use('/api/sections', require('./routes/section'));
+
+// Zorluk seviyeleri rotaları
+app.use('/api/difficulty-levels', require('./routes/difficultyLevel'));
 
 // Test rotaları
 app.use('/api/tests', require('./routes/test'));

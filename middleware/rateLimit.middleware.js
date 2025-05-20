@@ -7,7 +7,7 @@ const config = require('../config');
 // Genel API rate limiter
 exports.apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 dakika
-    max: 100, // Her IP'den 15 dakikada en fazla 100 istek
+    max: 200, // Her IP'den 15 dakikada en fazla 100 istek
     standardHeaders: true, // Limit bilgilerini döndür (X-RateLimit-*)
     legacyHeaders: false, // X-RateLimit-* başlıklarını devre dışı bırak
     message: {
@@ -20,7 +20,7 @@ exports.apiLimiter = rateLimit({
 // Hassas rotalar için daha sıkı limit (login, register gibi)
 exports.authLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 saat
-    max: 10, // Her IP'den saatte en fazla 10 istek
+    max: 20, // Her IP'den saatte en fazla 10 istek
     standardHeaders: true,
     legacyHeaders: false,
     message: {

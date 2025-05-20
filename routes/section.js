@@ -16,6 +16,13 @@ const { authenticate, requireAdmin } = require('../middleware/auth.middleware');
  *   get:
  *     summary: Tüm bölümleri listeler
  *     tags: [Sections]
+ *     parameters:
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: integer
+ *         description: Belirli bir kategoriye ait bölümleri filtrele
+ *         required: false
  *     responses:
  *       200:
  *         description: Bölümlerin listesi başarıyla getirildi
@@ -67,8 +74,14 @@ router.get('/:id', sectionController.getSectionById);
  *             properties:
  *               title:
  *                 type: string
+ *                 example: "Okuma Anlama"
  *               description:
  *                 type: string
+ *                 example: "İngilizce okuma ve anlama becerilerini geliştiren bölüm"
+ *               categoryId:
+ *                 type: integer
+ *                 description: Bölümün ait olduğu kategori ID'si
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Bölüm başarıyla oluşturuldu
@@ -78,6 +91,8 @@ router.get('/:id', sectionController.getSectionById);
  *         description: Kimlik doğrulama gerekli
  *       403:
  *         description: Yetkisiz erişim
+ *       404:
+ *         description: Belirtilen kategori bulunamadı
  *       500:
  *         description: Sunucu hatası
  */
@@ -110,8 +125,14 @@ router.post('/', authenticate, requireAdmin, sectionController.createSection);
  *             properties:
  *               title:
  *                 type: string
+ *                 example: "Okuma Anlama"
  *               description:
  *                 type: string
+ *                 example: "İngilizce okuma ve anlama becerilerini geliştiren bölüm"
+ *               categoryId:
+ *                 type: integer
+ *                 description: Bölümün ait olduğu kategori ID'si
+ *                 example: 1
  *     responses:
  *       200:
  *         description: Bölüm başarıyla güncellendi
@@ -122,7 +143,7 @@ router.post('/', authenticate, requireAdmin, sectionController.createSection);
  *       403:
  *         description: Yetkisiz erişim
  *       404:
- *         description: Bölüm bulunamadı
+ *         description: Bölüm veya belirtilen kategori bulunamadı
  *       500:
  *         description: Sunucu hatası
  */

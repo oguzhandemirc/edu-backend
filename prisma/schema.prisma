@@ -13,58 +13,107 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Kategori modeli
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  createdBy   User      @relation("CategoryCreatedBy", fields: [createdById], references: [id])
+  updatedById Int?
+  updatedBy   User?     @relation("CategoryUpdatedBy", fields: [updatedById], references: [id])
+  sections    Section[]
+
+  @@index([createdById])
+  @@index([updatedById])
+}
+
 model User {
-  id               Int          @id @default(autoincrement())
-  email            String       @unique
-  password         String
-  name             String?
-  googleId         String?      @unique
-  profilePhoto     String?
-  role             String       @default("user")
-  termsAccepted    Boolean      @default(false)
-  marketingEmails  Boolean      @default(false)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  sections         Section[]    @relation("SectionCreatedBy")
-  tests            Test[]       @relation("TestCreatedBy")
-  questions        Question[]   @relation("QuestionCreatedBy")
-  updatedSections  Section[]    @relation("SectionUpdatedBy")
-  updatedTests     Test[]       @relation("TestUpdatedBy")
-  updatedQuestions Question[]   @relation("QuestionUpdatedBy")
-  testResults      TestResult[]
+  id                Int                  @id @default(autoincrement())
+  email             String               @unique
+  password          String
+  name              String?
+  googleId          String?              @unique
+  profilePhoto      String?
+  role              String               @default("user")
+  termsAccepted     Boolean              @default(false)
+  marketingEmails   Boolean              @default(false)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  sections          Section[]            @relation("SectionCreatedBy")
+  tests             Test[]               @relation("TestCreatedBy")
+  questions         Question[]           @relation("QuestionCreatedBy")
+  updatedSections   Section[]            @relation("SectionUpdatedBy")
+  updatedTests      Test[]               @relation("TestUpdatedBy")
+  updatedQuestions  Question[]           @relation("QuestionUpdatedBy")
+  testResults       TestResult[]
+  categories        Category[]           @relation("CategoryCreatedBy")
+  updatedCategories Category[]           @relation("CategoryUpdatedBy")
+  difficultyLevels  DifficultyLevel[]    @relation("DifficultyLevelCreatedBy")
+  updatedDifficulties DifficultyLevel[]  @relation("DifficultyLevelUpdatedBy")
 }
 
 // Bölümler: Okuduğunu anlama, çeviri, cümle tamamlama, vb.
 model Section {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
-  description String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  description String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   createdById Int
-  createdBy   User     @relation("SectionCreatedBy", fields: [createdById], references: [id])
+  createdBy   User      @relation("SectionCreatedBy", fields: [createdById], references: [id])
   updatedById Int?
-  updatedBy   User?    @relation("SectionUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?     @relation("SectionUpdatedBy", fields: [updatedById], references: [id])
   tests       Test[]
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+}
+
+// Zorluk seviyesi modeli
+model DifficultyLevel {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?   @db.Text
+  value       Int       @default(1) // Zorluğun sayısal değeri (sıralama için)
+  tests       Test[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  createdBy   User      @relation("DifficultyLevelCreatedBy", fields: [createdById], references: [id])
+  updatedById Int?
+  updatedBy   User?     @relation("DifficultyLevelUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // Testler: Her bölümün kendi içinde (Test1, Test2, Test3)
 model Test {
-  id          Int          @id @default(autoincrement())
-  title       String
-  description String       @db.Text
-  difficulty  Difficulty   @default(BEGINNER)
-  duration    Int          @default(30) // Dakika cinsinden süre (varsayılan 30 dakika)
-  sectionId   Int
-  section     Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  createdById Int
-  createdBy   User         @relation("TestCreatedBy", fields: [createdById], references: [id])
-  updatedById Int?
-  updatedBy   User?        @relation("TestUpdatedBy", fields: [updatedById], references: [id])
-  questions   Question[]
-  testResults TestResult[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id               Int              @id @default(autoincrement())
+  title            String
+  description      String           @db.Text
+  difficultyLevelId Int
+  difficultyLevel  DifficultyLevel  @relation(fields: [difficultyLevelId], references: [id])
+  duration         Int              @default(30) // Dakika cinsinden süre (varsayılan 30 dakika)
+  sectionId        Int
+  section          Section          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdById      Int
+  createdBy        User             @relation("TestCreatedBy", fields: [createdById], references: [id])
+  updatedById      Int?
+  updatedBy        User?            @relation("TestUpdatedBy", fields: [updatedById], references: [id])
+  questions        Question[]
+  testResults      TestResult[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([difficultyLevelId])
+  @@index([sectionId])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // Sorular (Sadece çoktan seçmeli)
@@ -128,10 +177,45 @@ model UserAnswer {
   @@index([questionId])
 }
 
-// Zorluk seviyesi enum
-enum Difficulty {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
+// Silinen kullanıcı bilgilerini saklama modeli
+model DeletedUser {
+  id            Int      @id @default(autoincrement())
+  originalId    Int      @unique
+  email         String
+  name          String?
+  googleId      String?
+  profilePhoto  String?
+  role          String
+  deletedAt     DateTime @default(now())
+  deletedReason String?  @db.Text
+
+  @@index([email])
+}
+
+// Şifremi unuttum için kod tablosu
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+
+  @@index([email])
+  @@index([token])
+}
+
+// Email değişikliği için kod tablosu
+model EmailChange {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  oldEmail  String
+  newEmail  String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+
+  @@index([userId])
+  @@index([token])
 }
